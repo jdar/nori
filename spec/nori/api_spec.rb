@@ -4,7 +4,7 @@ describe Nori do
 
   describe "PARSERS" do
     it "should return a Hash of parser details" do
-      expect(Nori::PARSERS).to eq({ :rexml => "REXML", :nokogiri => "Nokogiri" })
+      expect(Nori::PARSERS).to eq({ :rexml => "REXML", :ariel_parser => 'ArielParser', :nokogiri => "Nokogiri" })
     end
   end
 
@@ -125,6 +125,16 @@ describe Nori do
       expect(Nori::Parser::REXML).to receive(:parse).and_return({})
       nori(:parser => :rexml).parse("<any>thing</any>")
     end
+
+    it "can be configured to use the ariel parser" do
+      # parsers are loaded lazily by default
+      require "nori/parser/ariel_parser"
+
+      expect(Nori::Parser::ArielParser).to receive(:parse).and_return({})
+      nori(:parser => :ariel_parser).parse("<any>thing</any>")
+    end
+
+
   end
 
   context "#parse without :delete_namespace_attributes" do

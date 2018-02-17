@@ -1,8 +1,41 @@
 require "spec_helper"
 
+dirname = File.dirname(__FILE__)
+require_relative '../../lib/nori/parser/ariel_parser.rb'
+
 describe Nori do
 
-  Nori::PARSERS.each do |parser, class_name|
+  context "using the :ariel_parser" do
+    let(:parser) { :ariel_parser }
+
+    it "should work with unnormalized characters" do
+      xml = '<l:root>&amp;</l:root>'
+      expect(parse(xml)).to eq({ :name => 'root', :raw => "&" })
+    end
+
+    it "should transform a simple tag with content" do
+      xml = "<l:tag>This is the contents</l:tag>"
+      expect(parse(xml)).to eq({ :name => 'tag', :raw => 'This is the contents' })
+    end
+    it "should ignore non-ariel tags" do
+      xml = "<tagouter><l:tag><taginner>This is the contents</taginner></l:tag><tagouter>"
+      expect(parse(xml)).to eq({ :name => 'tag', :raw => '<taginner>This is the contents</taginner>' })
+    end
+    it "should ignore non-ariel tags with same name" do
+      xml = "<tag><l:tag><tag>This is the contents</tag></l:tag><tag><tag>"
+      expect(parse(xml)).to eq({ :name => 'tag', :raw => '<tag>This is the contents</tag>' })
+    end
+    it "error if not a tree" do
+      skip 
+      xml = "<tagouter><l:tag><taginner>This is the contents</taginner></l:tag><tagouter><tagouter><l:tag><taginner>This is the contents</taginner></l:tag><tagouter>"
+      expect(parse(xml)).to eq({ :name => 'tag', :raw => '<taginner>This is the contents</taginner>' })
+    end
+  end
+
+
+
+
+  {:nokogiri=>'Nokogiri', :rexml=>'REXML'}.each do |parser, class_name|
     context "using the :#{parser} parser" do
 
       let(:parser) { parser }
